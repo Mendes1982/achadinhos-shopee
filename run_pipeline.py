@@ -55,7 +55,7 @@ def main():
         if not os.path.exists(".git"):
             print("[Aviso] Repositorio Git nao iniciado. Iniciando...")
             run_command(["git", "init"])
-            run_command(["git", "branch", "-M", "main"])
+            run_command(["git", "branch", "-M", "master"])
 
         # Commita os novos produtos e empurra para a nuvem
         print("Adicionando arquivos modificados...")
@@ -68,7 +68,7 @@ def main():
         
         print("Enviando alteracoes para o repositorio remoto (GitHub)...")
         # Este comando assume que voce ja configurou o 'git remote add origin' previamente.
-        push_success = run_command(["git", "push", "origin", "main"])
+        push_success = run_command(["git", "push", "origin", "master"])
         
         if push_success:
             print("\n[SUCESSO] VITRINE WEB ATUALIZADA ONLINE COM SUCESSO!")
