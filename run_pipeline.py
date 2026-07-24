@@ -40,7 +40,7 @@ def main():
         sys.executable, 
         "process_datafeed.py", 
         "-u", args.url, 
-        "-o", "shopee-vitrine"
+        "-o", "."
     ])
     
     if not feed_success:
@@ -59,7 +59,7 @@ def main():
 
         # Commita os novos produtos e empurra para a nuvem
         print("Adicionando arquivos modificados...")
-        run_command(["git", "add", "shopee-vitrine/index.html", "shopee-vitrine/shopee_products_filtered.json"])
+        run_command(["git", "add", "index.html", "shopee_products_filtered.json"])
         
         commit_message = "Atualizacao automatica do catalogo Shopee (Filtro Seguro)"
         print(f"Criando commit: '{commit_message}'...")

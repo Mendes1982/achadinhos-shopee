@@ -350,7 +350,7 @@
         async function loadProducts() {
             try {
                 // Try to load processed data
-                const response = await fetch('../shopee_products_filtered.json');
+                const response = await fetch('./shopee_products_filtered.json');
                 if (response.ok) {
                     allProducts = await response.json();
                     console.log("Loaded products from JSON successfully.");
