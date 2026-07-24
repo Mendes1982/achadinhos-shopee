@@ -1,0 +1,571 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achadinhos Recomendados - Oficial Shopee</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        shopee: {
+                            50: '#fff1ee',
+                            100: '#ffdfd9',
+                            500: '#ee4d2d', // Official Shopee Orange
+                            600: '#d73e21',
+                            700: '#b83017',
+                        },
+                        darkBg: '#090d16',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0px;
+        }
+        /* Stable aspect ratio images to prevent layout shifts */
+        .product-img-container {
+            aspect-ratio: 1 / 1;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Custom scrollbar for category selector */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-2 text-shopee-500 font-extrabold text-xl tracking-tight">
+                <i data-lucide="shopping-bag" class="w-7 h-7"></i>
+                <span>ACHADINHOS<span class="text-gray-900 font-normal">OFICIAIS</span></span>
+            </a>
+            
+            <!-- Safe & Compliant Tag -->
+            <div class="hidden sm:flex items-center space-x-2 text-xs text-green-700 bg-green-50 px-3 py-1.5 rounded-full border border-green-200">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+                <span>Parceiro Verificado Shopee</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero / Header Search (Utilitarian layout, direct action focus) -->
+    <section class="bg-gradient-to-r from-shopee-50 to-orange-50 border-b border-orange-100 py-10 px-4">
+        <div class="max-w-xl mx-auto text-center space-y-4">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+                Encontre o link do vídeo aqui!
+            </h1>
+            <p class="text-sm text-gray-600">
+                Digite o código numérico exibido no vídeo para encontrar o produto correspondente direto no Shopee com desconto.
+            </p>
+            
+            <!-- Search Input Container -->
+            <div class="relative max-w-md mx-auto mt-6">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Digite o código (ex: 101, 102) ou palavra-chave..." 
+                    class="block w-full pl-11 pr-24 py-3 text-base text-gray-900 placeholder-gray-400 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-shopee-500 focus:border-shopee-500 shadow-sm transition-all"
+                >
+                <div class="absolute inset-y-1 right-1 flex items-center">
+                    <button 
+                        id="clearBtn" 
+                        class="hidden px-2 text-gray-400 hover:text-gray-600 transition-colors"
+                        title="Limpar pesquisa"
+                    >
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                    <span class="bg-gray-100 text-gray-500 text-xs px-2.5 py-1.5 rounded mr-1 font-mono font-semibold select-none border border-gray-200">Buscar</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+        <!-- Category Selector -->
+        <div class="mb-8">
+            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-2" id="categoriesContainer">
+                <button 
+                    class="category-btn px-4 py-2 text-xs font-semibold rounded-lg border transition-all shrink-0 bg-shopee-500 text-white border-shopee-500 shadow-sm"
+                    data-category="all"
+                >
+                    Todos os Achados
+                </button>
+                <!-- Categories will be injected dynamically here -->
+            </div>
+        </div>
+
+        <!-- Feedback Messages -->
+        <div id="noResults" class="hidden text-center py-16 bg-white border border-gray-200 rounded-lg p-6 space-y-4">
+            <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto text-shopee-500">
+                <i data-lucide="alert-circle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Nenhum produto encontrado</h3>
+            <p class="text-sm text-gray-600 max-w-sm mx-auto">
+                Não encontramos nenhum item correspondente a "<span id="searchTermText" class="font-semibold text-shopee-500"></span>". Verifique se o código está correto!
+            </p>
+            <button 
+                onclick="resetFilters()" 
+                class="inline-flex items-center space-x-2 text-sm font-semibold text-shopee-500 hover:text-shopee-600 hover:underline"
+            >
+                <span>Mostrar todos os produtos</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+
+        <!-- Products Grid -->
+        <div 
+            id="productsGrid" 
+            class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 transition-all duration-300"
+            style="min-height: 300px;"
+        >
+            <!-- Products will be injected here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center space-y-4 text-gray-500 text-xs">
+            <p class="font-medium text-gray-700">
+                ACHADINHOS OFICIAIS &copy; 2026. Todos os direitos reservados.
+            </p>
+            <p class="max-w-lg mx-auto">
+                Aviso: Como Afiliado Shopee, recebemos comissões por compras qualificadas realizadas através dos links disponibilizados nesta página. Nossos links são seguros e direcionam diretamente para o aplicativo ou site oficial da Shopee Brasil.
+            </p>
+            <p class="text-gray-400">
+                Desenvolvido em total conformidade com as Políticas de Produtos Proibidos e Restritos da Shopee.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Product Detail Modal -->
+    <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300">
+        <div class="bg-white rounded-lg max-w-lg w-full overflow-hidden shadow-2xl relative border border-gray-200 max-h-[90vh] flex flex-col">
+            <!-- Close Button -->
+            <button 
+                onclick="closeModal()" 
+                class="absolute top-3 right-3 bg-white bg-opacity-80 hover:bg-white text-gray-700 hover:text-gray-900 rounded-full p-1.5 shadow-md border border-gray-100 z-10 transition-all"
+                title="Fechar modal"
+            >
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Modal Scrollable Content -->
+            <div class="overflow-y-auto flex-grow">
+                <!-- Product Image in Modal -->
+                <div class="w-full aspect-[4/3] bg-gray-100 relative overflow-hidden">
+                    <img 
+                        id="modalImage" 
+                        src="" 
+                        alt="Imagem do Produto" 
+                        class="w-full h-full object-cover"
+                        onerror="this.src='https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop&q=60'"
+                    >
+                    <div id="modalCodeBadge" class="absolute bottom-3 left-3 bg-shopee-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-md">
+                        CÓDIGO #101
+                    </div>
+                </div>
+
+                <!-- Product Body -->
+                <div class="p-5 space-y-4">
+                    <div class="flex items-center space-x-2">
+                        <span id="modalCategory" class="text-xs font-bold text-shopee-500 bg-shopee-50 px-2 py-1 rounded">
+                            CATEGORIA
+                        </span>
+                    </div>
+                    <h2 id="modalTitle" class="text-lg font-bold text-gray-900 leading-snug">
+                        Título do Produto Completo
+                    </h2>
+                    
+                    <!-- Pricing Container -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-gray-500 block">Preço Promocional</span>
+                            <span id="modalPrice" class="text-2xl font-black text-shopee-500">R$ 0,00</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">Frete Seguro</span>
+                            <span class="text-xs text-green-600 font-semibold block mt-1"><i data-lucide="check" class="w-3.5 h-3.5 inline mr-0.5"></i>No Estoque</span>
+                        </div>
+                    </div>
+
+                    <!-- Security Alert -->
+                    <div class="flex items-start space-x-2 text-xs text-gray-500 bg-blue-50/55 p-3 rounded-lg border border-blue-100/50">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-blue-500 shrink-0 mt-0.5"></i>
+                        <span>Este é um link afiliado verificado. Você será redirecionado para a página de finalização oficial da Shopee com segurança.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer (Fixed at bottom) -->
+            <div class="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between space-x-3 shrink-0">
+                <button 
+                    onclick="copyLinkToClipboard()" 
+                    class="px-4 py-3 bg-white border border-gray-300 text-gray-700 hover:text-gray-950 font-semibold text-sm rounded-lg hover:bg-gray-50 shadow-sm flex items-center justify-center space-x-2 transition-all"
+                    title="Copiar link do produto"
+                >
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Copiar Link</span>
+                </button>
+                <a 
+                    id="modalBuyBtn" 
+                    href="#" 
+                    target="_blank" 
+                    class="flex-grow py-3 bg-shopee-500 hover:bg-shopee-600 text-white font-bold text-sm rounded-lg shadow-md hover:shadow-lg flex items-center justify-center space-x-2 transition-all"
+                >
+                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                    <span>Ir para o Shopee</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Block -->
+    <script>
+        // Default Mock/Fallback Products matching process_datafeed.py simulation (used if json load fails)
+        const fallbackProducts = [
+            {
+                "code": "101",
+                "name": "Organizador de Geladeira Giratorio 360 Graus",
+                "category": "Utilidades Domesticas",
+                "link": "https://shopee.com.br/m/ChoiceOficial-aff",
+                "image": "https://images.unsplash.com/photo-1595341888016-a392ef81b7de?w=400",
+                "price": 49.90,
+                "commission_rate": 12.0
+            },
+            {
+                "code": "102",
+                "name": "Rolo Adesivo Lavavel para Tirar Pelos de Roupa",
+                "category": "Utilidades Domesticas",
+                "link": "https://shopee.com.br/m/ChoiceOficial-aff",
+                "image": "https://images.unsplash.com/photo-1528740561666-bd247e66ad50?w=400",
+                "price": 19.90,
+                "commission_rate": 12.0
+            },
+            {
+                "code": "103",
+                "name": "Aspirador de Po Portatil para Carro de Alta Potencia",
+                "category": "Automotivo",
+                "link": "https://shopee.com.br/m/ChoiceOficial-aff",
+                "image": "https://images.unsplash.com/photo-1563720223185-11003d516935?w=400",
+                "price": 65.00,
+                "commission_rate": 15.0
+            },
+            {
+                "code": "104",
+                "name": "Luminaria LED de Mesa Touch com Carregador Sem Fio",
+                "category": "Iluminacao / Quarto",
+                "link": "https://shopee.com.br/m/ChoiceOficial-aff",
+                "image": "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400",
+                "price": 119.00,
+                "commission_rate": 14.0
+            },
+            {
+                "code": "105",
+                "name": "Mini Processador de Alimentos USB Recarregavel",
+                "category": "Cozinha",
+                "link": "https://shopee.com.br/m/ChoiceOficial-aff",
+                "image": "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400",
+                "price": 29.90,
+                "commission_rate": 10.0
+            },
+            {
+                "code": "106",
+                "name": "Mop Limpeza Pratica com Balde Centrifuga",
+                "category": "Limpeza",
+                "link": "https://shopee.com.br/m/ChoiceOficial-aff",
+                "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=400",
+                "price": 79.90,
+                "commission_rate": 8.0
+            }
+        ];
+
+        let allProducts = [];
+        let currentCategory = 'all';
+        let currentSearch = '';
+        let selectedProduct = null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            
+            // Setup Search event
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearBtn');
+            
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.trim().toLowerCase();
+                
+                if (currentSearch.length > 0) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+                
+                renderProducts();
+            });
+
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                currentSearch = '';
+                clearBtn.classList.add('hidden');
+                renderProducts();
+                searchInput.focus();
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            // Close modal when clicking outside contents
+            document.getElementById('productModal').addEventListener('click', (e) => {
+                if (e.target.id === 'productModal') closeModal();
+            });
+        });
+
+        // Load Products from JSON or fallback
+        async function loadProducts() {
+            try {
+                // Try to load processed data
+                const response = await fetch('../shopee_products_filtered.json');
+                if (response.ok) {
+                    allProducts = await response.json();
+                    console.log("Loaded products from JSON successfully.");
+                } else {
+                    throw new Error("JSON file could not be read.");
+                }
+            } catch (err) {
+                console.warn("Could not fetch JSON. Using mock fallback data:", err.message);
+                allProducts = fallbackProducts;
+            }
+            
+            buildCategories();
+            renderProducts();
+        }
+
+        // Extract and build unique categories
+        function buildCategories() {
+            const container = document.getElementById('categoriesContainer');
+            
+            // Get unique category names
+            const categories = new Set();
+            allProducts.forEach(p => {
+                if (p.category) categories.add(p.category);
+            });
+
+            // Clean other buttons except "Todos"
+            const buttons = container.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('data-category') !== 'all') {
+                    btn.remove();
+                }
+            });
+
+            // Inject new category buttons
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'category-btn px-4 py-2 text-xs font-semibold rounded-lg border transition-all shrink-0 bg-white hover:bg-gray-50 text-gray-700 border-gray-300';
+                btn.setAttribute('data-category', cat);
+                btn.textContent = cat;
+                btn.addEventListener('click', () => selectCategory(cat));
+                container.appendChild(btn);
+            });
+
+            // Setup click for "Todos"
+            buttons[0].addEventListener('click', () => selectCategory('all'));
+        }
+
+        // Handle category selection
+        function selectCategory(cat) {
+            currentCategory = cat;
+            
+            // Update active state class names on buttons
+            const buttons = document.querySelectorAll('.category-btn');
+            buttons.forEach(btn => {
+                const btnCat = btn.getAttribute('data-category');
+                if (btnCat === cat) {
+                    btn.className = 'category-btn px-4 py-2 text-xs font-semibold rounded-lg border transition-all shrink-0 bg-shopee-500 text-white border-shopee-500 shadow-sm';
+                } else {
+                    btn.className = 'category-btn px-4 py-2 text-xs font-semibold rounded-lg border transition-all shrink-0 bg-white hover:bg-gray-50 text-gray-700 border-gray-300';
+                }
+            });
+
+            renderProducts();
+        }
+
+        // Render products based on current filters
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            const noResults = document.getElementById('noResults');
+            
+            // Filter logic
+            const filtered = allProducts.filter(p => {
+                // Category match
+                const matchesCategory = (currentCategory === 'all' || p.category === currentCategory);
+                
+                // Search match (by title, category or code)
+                const matchesSearch = !currentSearch || 
+                    (p.name && p.name.toLowerCase().includes(currentSearch)) ||
+                    (p.category && p.category.toLowerCase().includes(currentSearch)) ||
+                    (p.code && p.code.includes(currentSearch));
+                
+                return matchesCategory && matchesSearch;
+            });
+
+            // Render
+            grid.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                document.getElementById('searchTermText').textContent = currentSearch || currentCategory;
+            } else {
+                grid.classList.remove('hidden');
+                noResults.classList.add('hidden');
+
+                filtered.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg hover:border-orange-200 transition-all flex flex-col group';
+                    card.style.borderRadius = '8px'; // Max 8px radius constraint
+                    
+                    // Format price
+                    const priceFormatted = p.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    
+                    // Product image check
+                    const imageSrc = p.image || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400&auto=format&fit=crop&q=60';
+
+                    card.innerHTML = `
+                        <!-- Image Container with stable size -->
+                        <div class="product-img-container bg-gray-50 cursor-pointer" onclick="openModal('${p.code}')">
+                            <img 
+                                src="${imageSrc}" 
+                                alt="${p.name}" 
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                loading="lazy"
+                                onerror="this.src='https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=400'"
+                            >
+                            <!-- Code Badge -->
+                            <div class="absolute top-2 left-2 bg-shopee-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow">
+                                COD #${p.code}
+                            </div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="p-3 flex-grow flex flex-col justify-between space-y-2">
+                            <div class="space-y-1">
+                                <span class="text-[9px] uppercase font-bold text-shopee-500 tracking-wider block">
+                                    ${p.category || 'Utilidades'}
+                                </span>
+                                <h3 class="text-xs font-semibold text-gray-800 line-clamp-2 leading-snug hover:text-shopee-500 cursor-pointer" onclick="openModal('${p.code}')">
+                                    ${p.name}
+                                </h3>
+                            </div>
+                            
+                            <div class="pt-1 flex items-end justify-between">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] text-gray-400 line-through leading-none">R$ ${(p.price * 1.3).toFixed(2).replace('.', ',')}</span>
+                                    <span class="text-sm font-black text-shopee-500 leading-none mt-0.5">${priceFormatted}</span>
+                                </div>
+                                
+                                <button 
+                                    onclick="openModal('${p.code}')" 
+                                    class="w-7 h-7 bg-shopee-50 text-shopee-500 hover:bg-shopee-500 hover:text-white rounded-lg flex items-center justify-center transition-all border border-shopee-100"
+                                    title="Ver Detalhes do Produto"
+                                >
+                                    <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+            
+            // Re-render Lucide icons
+            lucide.createIcons();
+        }
+
+        // Reset search and categories
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            currentSearch = '';
+            document.getElementById('clearBtn').classList.add('hidden');
+            selectCategory('all');
+        }
+
+        // Modal Operations
+        function openModal(code) {
+            const prod = allProducts.find(p => p.code === code);
+            if (!prod) return;
+
+            selectedProduct = prod;
+
+            const modal = document.getElementById('productModal');
+            const priceFormatted = prod.price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+            document.getElementById('modalImage').src = prod.image || 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600';
+            document.getElementById('modalCodeBadge').textContent = `CÓDIGO #${prod.code}`;
+            document.getElementById('modalCategory').textContent = prod.category || 'UTILIDADES';
+            document.getElementById('modalTitle').textContent = prod.name;
+            document.getElementById('modalPrice').textContent = priceFormatted;
+            
+            // Setup buy button href
+            document.getElementById('modalBuyBtn').href = prod.link;
+
+            // Open modal animation
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 50);
+
+            // Re-init lucide for modal icons
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('productModal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            selectedProduct = null;
+        }
+
+        // Copy Affiliate Link to Clipboard
+        function copyLinkToClipboard() {
+            if (!selectedProduct) return;
+            
+            navigator.clipboard.writeText(selectedProduct.link).then(() => {
+                alert("Link de Afiliado copiado para a área de transferência! Prontinho para compartilhar.");
+            }).catch(err => {
+                console.error('Erro ao copiar link:', err);
+                // Fallback direct prompt
+                prompt("Copie o link manualmente:", selectedProduct.link);
+            });
+        }
+    </script>
+</body>
+</html>
