@@ -1,0 +1,762 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaiDeViral - Editor de Vídeos em Lote</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            950: '#451a03',
+                        },
+                        darkBg: '#090d16',
+                        darkCard: '#111726',
+                        darkBorder: '#1f293d',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #060911;
+            color: #f3f4f6;
+        }
+
+        /* Custom premium sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: #172033;
+            height: 5px;
+            border-radius: 9999px;
+            outline: none;
+            transition: background 0.2s;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #f59e0b;
+            cursor: pointer;
+            border: 2.5px solid #0c111d;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.4);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+            background: #fbbf24;
+        }
+        input[type="range"]:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased text-gray-200">
+
+    <!-- Header bar -->
+    <header class="border-b border-darkBorder bg-darkBg/95 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="bg-gradient-to-tr from-amber-500 to-amber-600 p-2.5 rounded-xl text-darkBg shadow-lg shadow-amber-500/10">
+                <i data-lucide="sparkles" class="w-5.5 h-5.5 fill-current"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-lg font-extrabold tracking-tight text-white leading-none">VaiDeViral</h1>
+                    <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 uppercase tracking-widest border border-amber-500/20">Pro</span>
+                </div>
+                <p class="text-[10px] text-gray-500 font-medium mt-1">Editor em Lote • Processamento Seguro 100% Local</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <div class="hidden sm:flex items-center gap-2 text-xs text-gray-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Navegador pronto</span>
+            </div>
+            <a href="https://github.com" target="_blank" class="p-2 text-gray-400 hover:text-white hover:bg-gray-900 rounded-lg transition-all" title="Ajuda">
+                <i data-lucide="help-circle" class="w-5 h-5"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- App Body Layout -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- Left configuration pane -->
+        <aside class="w-full lg:w-[410px] border-r border-darkBorder bg-darkBg flex flex-col overflow-y-auto max-h-[calc(100vh-65px)]">
+            
+            <!-- Sidebar Navigation Tabs -->
+            <div class="border-b border-darkBorder bg-gray-950 p-2 flex gap-1 sticky top-0 z-30">
+                <button id="tabProfileBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 text-center">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i> Perfil
+                </button>
+                <button id="tabEffectsBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-gray-400 hover:text-white text-center">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i> Efeitos
+                </button>
+                <button id="tabDownloadBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-gray-400 hover:text-white text-center">
+                    <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> Baixar
+                </button>
+                <button id="tabRifaBtn" class="flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 text-gray-400 hover:text-white text-center">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> RifaSegura
+                </button>
+            </div>
+
+            <!-- Tab 1: Profile & Layout Settings -->
+            <div id="tabProfileContent" class="flex flex-col">
+                <!-- Section 01: Profile settings -->
+                <div class="p-5 border-b border-darkBorder flex flex-col gap-4.5">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-5.5 h-5.5 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-[10px] font-bold font-mono">01</div>
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-gray-300">Cabeçalho do Perfil</h2>
+                    </div>
+
+                    <!-- Avatar Upload -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-400 mb-2">Foto do Avatar</label>
+                        <div class="flex items-center gap-4">
+                            <div class="relative w-14 h-14 rounded-full border border-darkBorder bg-gray-950 flex items-center justify-center overflow-hidden group shrink-0 shadow-inner">
+                                <img id="avatarPreview" src="" class="w-full h-full object-cover hidden" alt="Avatar">
+                                <i id="avatarIcon" data-lucide="user" class="w-5 h-5 text-gray-600"></i>
+                                <label for="avatarInput" class="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                                    <i data-lucide="camera" class="w-4 h-4 text-white"></i>
+                                </label>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="avatarInput" accept="image/png, image/jpeg, image/jpg" class="hidden">
+                                <button onclick="document.getElementById('avatarInput').click()" class="px-3.5 py-2 bg-darkCard border border-darkBorder rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-gray-800 transition-all w-full flex items-center justify-center gap-2">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Escolher Foto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Text Inputs (Name & Handle) -->
+                    <div class="grid grid-cols-1 gap-3.5">
+                        <div>
+                            <label for="nameInput" class="block text-[11px] font-semibold text-gray-400 mb-1.5">Nome do Perfil</label>
+                            <div class="relative">
+                                <input type="text" id="nameInput" value="Gabriel" placeholder="Nome de exibição" class="w-full bg-darkCard border border-darkBorder rounded-xl pl-3.5 pr-8 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all">
+                                <i data-lucide="type" class="w-4 h-4 text-gray-600 absolute right-3 top-3"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="handleInput" class="block text-[11px] font-semibold text-gray-400 mb-1.5">Nome de Usuário (@handle)</label>
+                            <div class="relative">
+                                <input type="text" id="handleInput" value="@gabriel" placeholder="@usuario" class="w-full bg-darkCard border border-darkBorder rounded-xl pl-3.5 pr-8 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all">
+                                <i data-lucide="at-sign" class="w-4 h-4 text-gray-600 absolute right-3 top-3"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Styling Choices: Background & Alignment -->
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">Estilo Visual do Fundo</label>
+                            <div class="bg-gray-950 p-1 rounded-xl border border-darkBorder flex gap-1">
+                                <button id="bgWhiteBtn" class="flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all bg-white text-darkBg shadow">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-white border border-gray-300"></span>
+                                    Fundo Branco
+                                </button>
+                                <button id="bgBlackBtn" class="flex-1 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all text-gray-400 hover:text-white">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-black border border-gray-800"></span>
+                                    Fundo Preto
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[11px] font-semibold text-gray-400 mb-1.5">Posição Vertical</label>
+                            <div class="bg-gray-950 p-1 rounded-xl border border-darkBorder flex gap-1">
+                                <button id="posTopBtn" class="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                    Topo do Vídeo
+                                </button>
+                                <button id="posBottomBtn" class="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all text-gray-400 hover:text-white">
+                                    Base do Vídeo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Sliders Section -->
+                <div class="p-5 flex flex-col gap-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 mb-1 flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-gray-500"></i>
+                        Ajustes de Escala
+                    </h3>
+
+                    <!-- Avatar Size -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Tamanho do Avatar</span>
+                            <span id="avatarVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">180px</span>
+                        </div>
+                        <input type="range" id="avatarSize" min="60" max="350" value="180">
+                    </div>
+
+                    <!-- Font Name Size -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Fonte do Nome</span>
+                            <span id="nameVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">42px</span>
+                        </div>
+                        <input type="range" id="nameSize" min="20" max="100" value="42">
+                    </div>
+
+                    <!-- Font Handle Size -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Fonte do @handle</span>
+                            <span id="handleVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">30px</span>
+                        </div>
+                        <input type="range" id="handleSize" min="15" max="80" value="30">
+                    </div>
+
+                    <!-- Padding inside box -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Espaçamento Interno</span>
+                            <span id="paddingVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">48px</span>
+                        </div>
+                        <input type="range" id="paddingSize" min="20" max="150" value="48">
+                    </div>
+
+                    <!-- Offset from border -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Distância da Borda</span>
+                            <span id="offsetVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">60px</span>
+                        </div>
+                        <input type="range" id="offsetSize" min="10" max="300" value="60">
+                    </div>
+
+                    <!-- Card Width -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Largura do Cabeçalho</span>
+                            <span id="widthVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">85%</span>
+                        </div>
+                        <input type="range" id="headerWidth" min="50" max="100" value="85">
+                    </div>
+
+                    <!-- Box Border Radius -->
+                    <div class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between text-[11px]">
+                            <span class="text-gray-400 font-medium">Cantos Arredondados</span>
+                            <span id="radiusVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">24px</span>
+                        </div>
+                        <input type="range" id="borderRadius" min="0" max="100" value="24">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Layout Modes & Chroma Key EFX -->
+            <div id="tabEffectsContent" class="hidden flex flex-col">
+                <!-- Section 01: Watermark & Anti-mark -->
+                <div class="p-5 border-b border-darkBorder flex flex-col gap-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                        <i data-lucide="crop" class="w-4.5 h-4.5 text-gray-500"></i>
+                        Corte & Antimarca
+                    </h3>
+
+                    <!-- Zoom Toggle -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-300">Corte/Zoom Antimarca (+15%)</span>
+                            <span class="block text-[10px] text-gray-500 mt-0.5">Aumenta o zoom para cortar marcas d'água das bordas</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="zoomToggle" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <!-- Blur Mask Toggle -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="block text-xs font-semibold text-gray-300">Desfoque Inteligente</span>
+                            <span class="block text-[10px] text-gray-500 mt-0.5">Desfoca as áreas do TikTok/Reels</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="blurToggle" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+                </div>
+                <!-- Section 02: Split Video (Vídeo Dividido / Cut-Screen) -->
+                <div class="p-5 border-b border-darkBorder flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                            <i data-lucide="columns" class="w-4.5 h-4.5 text-gray-500"></i>
+                            Layout: Vídeo Dividido (Split)
+                        </h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="splitToggle" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <div id="splitConfigSection" class="hidden flex flex-col gap-4">
+                        <label class="block text-[11px] font-semibold text-gray-400">Vídeo de Fundo (Ex: Minecraft, Satisfatório, ASMR)</label>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="relative w-12 h-12 rounded-xl bg-gray-950 border border-darkBorder flex items-center justify-center overflow-hidden shrink-0">
+                                <i data-lucide="clapperboard" class="w-5 h-5 text-gray-600"></i>
+                                <video id="splitVideoPreview" class="w-full h-full object-cover hidden" muted playsinline></video>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="splitVideoInput" accept="video/mp4,video/webm" class="hidden">
+                                <button onclick="document.getElementById('splitVideoInput').click()" class="px-3 py-2 bg-darkCard border border-darkBorder rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-gray-800 transition-all w-full flex items-center justify-center gap-1.5">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Upload Vídeo Inferior
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Screen split ratio slider -->
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-gray-400 font-medium">Divisão da Tela (Principal / Fundo)</span>
+                                <span id="splitRatioVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">50%</span>
+                            </div>
+                            <input type="range" id="splitRatio" min="20" max="80" value="50">
+                        </div>
+
+                        <!-- Split Watermark Section -->
+                        <div class="border-t border-darkBorder pt-3 flex flex-col gap-3">
+                            <span class="block text-[11px] font-bold text-gray-300 uppercase tracking-wider">Marca d'Água Textual</span>
+                            
+                            <div>
+                                <label for="splitWatermarkText" class="block text-[10px] font-semibold text-gray-400 mb-1">Texto da Marca d'Água</label>
+                                <input type="text" id="splitWatermarkText" placeholder="Ex: @seu_usuario" class="w-full bg-darkCard border border-darkBorder rounded-xl px-3 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-amber-500">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label for="splitWatermarkPos" class="block text-[10px] font-semibold text-gray-400 mb-1">Posição</label>
+                                    <select id="splitWatermarkPos" class="w-full bg-darkCard border border-darkBorder rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500">
+                                        <option value="center">Centro</option>
+                                        <option value="top-left">Superior Esquerdo</option>
+                                        <option value="top-right">Superior Direito</option>
+                                        <option value="bottom-left">Inferior Esquerdo</option>
+                                        <option value="bottom-right">Inferior Direito</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center justify-between text-[10px] text-gray-400">
+                                        <span>Opacidade</span>
+                                        <span id="splitWatermarkOpacityVal" class="font-mono font-bold text-amber-400">40%</span>
+                                    </div>
+                                    <input type="range" id="splitWatermarkOpacity" min="0" max="100" value="40" class="w-full">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 03: Chroma Key Avatar (Avatar Green Screen) -->
+                <div class="p-5 border-b border-darkBorder flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                            <i data-lucide="smile" class="w-4.5 h-4.5 text-gray-500"></i>
+                            Avatar Chroma Key (Reação)
+                        </h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="chromaToggle" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-500 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    <div id="chromaConfigSection" class="hidden flex flex-col gap-4.5">
+                        <label class="block text-[11px] font-semibold text-gray-400">Vídeo com Fundo Verde (React Avatar)</label>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="relative w-12 h-12 rounded-xl bg-gray-950 border border-darkBorder flex items-center justify-center overflow-hidden shrink-0">
+                                <i data-lucide="user-check" class="w-5 h-5 text-gray-600"></i>
+                                <video id="chromaVideoPreview" class="w-full h-full object-cover hidden" muted playsinline></video>
+                            </div>
+                            <div class="flex-1">
+                                <input type="file" id="chromaVideoInput" accept="video/mp4,video/webm" class="hidden">
+                                <button onclick="document.getElementById('chromaVideoInput').click()" class="px-3 py-2 bg-darkCard border border-darkBorder rounded-xl text-xs font-semibold text-gray-300 hover:text-white hover:bg-gray-800 transition-all w-full flex items-center justify-center gap-1.5">
+                                    <i data-lucide="upload" class="w-3.5 h-3.5"></i> Upload Vídeo Verde
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Chroma Key Sensitivity -->
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-gray-450 font-medium">Tolerância do Verde</span>
+                                <span id="chromaSensVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">60</span>
+                            </div>
+                            <input type="range" id="chromaSensitivity" min="20" max="150" value="60">
+                        </div>
+
+                        <!-- Chroma Avatar Scale -->
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-gray-450 font-medium">Tamanho do Avatar</span>
+                                <span id="chromaScaleVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">25%</span>
+                            </div>
+                            <input type="range" id="chromaScale" min="10" max="60" value="25">
+                        </div>
+
+                        <!-- Chroma Avatar Position X -->
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-gray-450 font-medium">Posição X (Horizontal)</span>
+                                <span id="chromaXVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">50%</span>
+                            </div>
+                            <input type="range" id="chromaX" min="0" max="100" value="50">
+                        </div>
+
+                        <!-- Chroma Avatar Position Y -->
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <span class="text-gray-450 font-medium">Posição Y (Vertical)</span>
+                                <span id="chromaYVal" class="font-mono text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded">75%</span>
+                            </div>
+                            <input type="range" id="chromaY" min="0" max="100" value="75">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Tab 3: Channel Downloader -->
+            <div id="tabDownloadContent" class="hidden p-5 flex flex-col gap-5">
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="download" class="w-5.5 h-5.5 text-amber-500"></i>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-300">Download em Massa</h2>
+                </div>
+
+                <div class="bg-amber-500/5 p-4 rounded-xl border border-amber-500/10 flex flex-col gap-2">
+                    <span class="text-xs font-bold text-amber-400">Como funciona:</span>
+                    <p class="text-[10.5px] text-gray-450 leading-relaxed">
+                        Navegadores impedem que scripts de web scraping acessem perfis de forma direta devido a CORS. 
+                        Para baixar o canal de forma limpa e automática, utilize o script local <code class="bg-gray-950 px-1.5 py-0.5 rounded border border-darkBorder font-mono text-amber-400 text-[10px]">baixar.py</code> disponível na pasta do seu projeto.
+                    </p>
+                </div>
+
+                <div class="flex flex-col gap-4">
+                    <!-- URL input -->
+                    <div>
+                        <label for="downloadUrlInput" class="block text-[11px] font-semibold text-gray-400 mb-1.5">URL do Canal / Perfil (YT, Instagram, TikTok)</label>
+                        <input type="text" id="downloadUrlInput" placeholder="Ex: https://www.instagram.com/perfil/" class="w-full bg-darkCard border border-darkBorder rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-amber-500">
+                    </div>
+
+                    <!-- Count selection -->
+                    <div>
+                        <label for="downloadCountInput" class="block text-[11px] font-semibold text-gray-400 mb-1.5">Número de Vídeos para Baixar</label>
+                        <select id="downloadCountInput" class="w-full bg-darkCard border border-darkBorder rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-amber-500">
+                            <option value="5">5 mais recentes</option>
+                            <option value="10" selected>10 mais recentes</option>
+                            <option value="20">20 mais recentes</option>
+                            <option value="50">50 mais recentes</option>
+                        </select>
+                    </div>
+
+                    <!-- Command preview -->
+                    <div class="flex flex-col gap-2.5">
+                        <label class="block text-[11px] font-semibold text-gray-400">Comando para executar no terminal</label>
+                        <div class="relative bg-gray-950 rounded-xl border border-darkBorder p-3 flex items-center justify-between">
+                            <code id="commandPreview" class="text-[10px] font-mono text-gray-300 break-all select-all pr-8">python baixar.py -u "" -c 10</code>
+                            <button id="copyCommandBtn" class="p-1.5 text-gray-500 hover:text-white hover:bg-darkCard rounded-lg absolute right-2.5" title="Copiar Comando">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run Local Tutorial -->
+                <div class="border-t border-darkBorder pt-4 mt-2">
+                    <h4 class="text-xs font-bold text-gray-300 mb-2">Instruções Passo a Passo:</h4>
+                    <ol class="list-decimal list-inside text-[10.5px] text-gray-450 space-y-2">
+                        <li>Abra seu Terminal ou PowerShell.</li>
+                        <li>Navegue até a pasta do projeto: <code class="bg-gray-950 px-1 py-0.5 rounded font-mono text-[9.5px]">cd D:\Users\Documents\TRAMPOS\vaideviral-editor</code></li>
+                        <li>Copie o comando acima e cole no terminal para rodar o download em lote.</li>
+                        <li>Os vídeos serão baixados na pasta <code class="bg-gray-950 px-1 py-0.5 rounded font-mono text-[9.5px]">videos_baixados</code>.</li>
+                        <li>Depois de baixar, arraste-os para o editor para editá-los em lote!</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Tab 4: RifaSegura V2 Marketing Pack -->
+            <div id="tabRifaContent" class="hidden p-5 flex flex-col gap-5">
+                <!-- Header -->
+                <div class="flex items-center gap-2.5">
+                    <div class="w-5.5 h-5.5 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-[10px] font-bold font-mono">RS</div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-300">RifaSegura V2 Pack</h2>
+                </div>
+
+                <!-- Card de Boas-Vindas -->
+                <div class="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 flex flex-col gap-2">
+                    <span class="text-xs font-bold text-emerald-400">Fábrica de Vídeos RifaSegura</span>
+                    <p class="text-[10.5px] text-gray-400 leading-relaxed">
+                        Crie conteúdos virais específicos para o seu nicho. Escolha um avatar pronto, aplique ao editor ou exporte carrosséis de marketing otimizados para alta conversão.
+                    </p>
+                </div>
+
+                <!-- Seção 1: Avatares do Criador -->
+                <div class="flex flex-col gap-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                        <i data-lucide="users" class="w-4.5 h-4.5 text-gray-500"></i>
+                        Avatares do Criador
+                    </h3>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-400 mb-2">Selecione o Avatar</label>
+                        <select id="rifaAvatarSelect" class="w-full bg-gray-950 border border-darkBorder rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="confeiteira">🍰 Confeiteira (Maria Doces)</option>
+                            <option value="mecanico">🔧 Mecânico (Julinho da Oficina)</option>
+                            <option value="mestre_obras">🧱 Mestre de Obras (Antônio)</option>
+                            <option value="papelaria">✏️ Papelaria (Ana Cláudia)</option>
+                            <option value="artesa">🧶 Artesã (Regina Macramê)</option>
+                        </select>
+                    </div>
+
+                    <!-- Informações do Avatar Selecionado -->
+                    <div id="rifaAvatarInfo" class="bg-darkCard rounded-xl border border-darkBorder p-4 flex flex-col gap-3 text-xs">
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-gray-500 block">Biografia do Personagem</span>
+                            <p id="rifaAvatarBio" class="text-gray-300 mt-1 leading-relaxed"></p>
+                        </div>
+                        
+                        <!-- Midjourney Prompt -->
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-gray-550 flex items-center justify-between">
+                                Prompt Midjourney (Avatar)
+                                <button id="copyPromptBtn" class="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-[9px] font-medium" title="Copiar Prompt">
+                                    <i data-lucide="copy" class="w-3 h-3"></i> Copiar
+                                </button>
+                            </span>
+                            <div class="bg-gray-950 rounded-lg p-2.5 mt-1 border border-darkBorder/40">
+                                <code id="rifaAvatarPrompt" class="text-[10.5px] font-mono text-gray-450 block break-words select-all"></code>
+                            </div>
+                        </div>
+
+                        <!-- Reels Script -->
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-gray-550 flex items-center justify-between">
+                                Roteiro de Reels (Vídeo)
+                                <button id="copyScriptBtn" class="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-[9px] font-medium" title="Copiar Roteiro">
+                                    <i data-lucide="copy" class="w-3 h-3"></i> Copiar
+                                </button>
+                            </span>
+                            <div class="bg-gray-950 rounded-lg p-2.5 mt-1 border border-darkBorder/40 max-h-24 overflow-y-auto">
+                                <p id="rifaAvatarScript" class="text-[11px] text-gray-300 whitespace-pre-line leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        <!-- WhatsApp template -->
+                        <div>
+                            <span class="text-[10px] uppercase font-bold text-gray-550 flex items-center justify-between">
+                                Copiável WhatsApp (Mensagem)
+                                <button id="copyWaBtn" class="text-emerald-400 hover:text-emerald-300 flex items-center gap-1 text-[9px] font-medium" title="Copiar Mensagem">
+                                    <i data-lucide="copy" class="w-3 h-3"></i> Copiar
+                                </button>
+                            </span>
+                            <div class="bg-gray-950 rounded-lg p-2.5 mt-1 border border-darkBorder/40 max-h-24 overflow-y-auto">
+                                <p id="rifaAvatarWa" class="text-[11px] text-gray-300 whitespace-pre-line leading-relaxed"></p>
+                            </div>
+                        </div>
+
+                        <!-- Aplicar Configurações -->
+                        <button id="applyRifaAvatarBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-darkBg font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-1 shadow-lg shadow-emerald-500/10">
+                            <i data-lucide="check" class="w-4 h-4"></i> Aplicar no Perfil do Editor
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Seção 2: Carrosséis de Vendas (Imagens Estáticas) -->
+                <div class="border-t border-darkBorder pt-4 flex flex-col gap-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                        <i data-lucide="image" class="w-4.5 h-4.5 text-gray-500"></i>
+                        Carrosséis de Conversão
+                    </h3>
+
+                    <div>
+                        <label class="block text-[11px] font-semibold text-gray-400 mb-2">Selecione o Carrossel</label>
+                        <select id="rifaCarouselSelect" class="w-full bg-gray-950 border border-darkBorder rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+                            <option value="seguranca">🛡️ Segurança e Confiança</option>
+                            <option value="como_participar">🎁 Como Participar (Passo a Passo)</option>
+                            <option value="ganhador">🏆 Ganhador da Semana (Provas Sociais)</option>
+                            <option value="urgencia">🚨 Últimas Horas / Escassez</option>
+                            <option value="clube">👑 Clube de Benefícios (Fidelização)</option>
+                        </select>
+                    </div>
+
+                    <!-- Smartphone Mockup Preview for Carousels (300x375 px) -->
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="text-[10px] uppercase font-bold text-gray-500">Prévia do Slide (4:5)</span>
+                        <div class="relative w-[300px] h-[375px] rounded-2xl bg-black border-4 border-darkBorder overflow-hidden shadow-xl flex items-center justify-center">
+                            <canvas id="rifaCarouselCanvas" width="300" height="375" class="w-full h-full object-cover"></canvas>
+                        </div>
+
+                        <!-- Carousel Controls Pager -->
+                        <div class="flex items-center justify-between w-[300px] px-1 mt-1">
+                            <button id="prevSlideBtn" class="p-2 bg-darkCard hover:bg-gray-800 rounded-lg border border-darkBorder text-gray-300 hover:text-white transition-all">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <span id="slideIndicator" class="text-xs font-mono font-bold text-gray-400 bg-darkCard border border-darkBorder px-3 py-1 rounded-lg">Slide 1 de 4</span>
+                            <button id="nextSlideBtn" class="p-2 bg-darkCard hover:bg-gray-800 rounded-lg border border-darkBorder text-gray-300 hover:text-white transition-all">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Baixar Slide -->
+                    <button id="downloadSlideBtn" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-darkBg font-bold py-2 px-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10">
+                        <i data-lucide="download" class="w-4 h-4"></i> Baixar Slide Ativo (1080x1350)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Output configs invisible fallback -->
+            <div class="hidden">
+                <select id="bitrateSelect"><option value="5000000"></option></select>
+                <select id="formatSelect"></select>
+            </div>
+
+        </aside>
+
+        <!-- Right Side: Preview mockup & File queues -->
+        <section class="flex-1 bg-[#04060b] p-6 lg:p-8 flex flex-col xl:flex-row gap-8 overflow-y-auto max-h-[calc(100vh-65px)] justify-center items-start">
+            
+            <!-- Smartphone chassis mockup for high-fidelity rendering preview -->
+            <div class="w-full max-w-[350px] shrink-0 mx-auto xl:mx-0 flex flex-col items-center">
+                <div class="w-full flex items-center justify-between mb-4">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-2">
+                        <i data-lucide="tablet" class="w-4 h-4 text-amber-500"></i>
+                        Live Preview (9:16)
+                    </h3>
+                    <span id="fpsCounter" class="text-[10px] font-mono text-gray-500 font-bold bg-darkCard px-2 py-0.5 rounded border border-darkBorder">FPS: --</span>
+                </div>
+
+                <!-- Chassis container -->
+                <div class="relative w-full aspect-[9/16] rounded-[48px] bg-black p-3.5 border-[10px] border-darkBorder shadow-2xl shadow-black/80 flex items-center justify-center overflow-hidden">
+                    
+                    <!-- Dynamic Island Simulated notch -->
+                    <div class="absolute top-6 left-1/2 transform -translate-x-1/2 w-28 h-7 bg-black rounded-full border border-gray-900 z-40 flex items-center justify-center">
+                        <span class="w-2.5 h-2.5 rounded-full bg-blue-950 border border-blue-900 absolute right-6"></span>
+                    </div>
+
+                    <!-- Screen Canvas Wrapper -->
+                    <div class="relative w-full h-full rounded-[34px] overflow-hidden bg-gray-950 border border-gray-900">
+                        <canvas id="previewCanvas" width="1080" height="1920" class="w-full h-full object-cover"></canvas>
+                        
+                        <!-- Real-time loading overlay -->
+                        <div id="canvasPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-gray-950/95 transition-opacity duration-300">
+                            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 flex items-center justify-center mb-4 text-amber-500 border border-amber-500/20 shadow-lg shadow-amber-500/5">
+                                <i data-lucide="video" class="w-6 h-6 animate-pulse"></i>
+                            </div>
+                            <p class="text-xs font-bold text-gray-300 uppercase tracking-wider">Aguardando vídeo</p>
+                            <p class="text-[10px] text-gray-500 mt-2 max-w-[200px] leading-relaxed">Arraste seus vídeos para a fila ao lado para iniciar a visualização ao vivo</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Upload drop area and render queue list -->
+            <div class="flex-1 w-full flex flex-col gap-6 max-w-2xl">
+                
+                <!-- Section 02 header & drop zone -->
+                <div class="flex items-center gap-2.5 mb-2">
+                    <div class="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs font-bold font-mono">02</div>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-gray-300">Solta os vídeos aqui</h2>
+                </div>
+
+                <!-- Dropzone box -->
+                <div id="dropZone" class="group border-2 border-dashed border-darkBorder hover:border-amber-500/50 hover:bg-amber-500/[0.01] bg-darkBg rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all shadow-sm">
+                    <input type="file" id="videoFilesInput" multiple accept="video/mp4,video/quicktime,video/mov,video/webm" class="hidden">
+                    
+                    <div class="w-14 h-14 rounded-2xl bg-darkCard flex items-center justify-center text-gray-500 group-hover:text-amber-500 group-hover:bg-amber-500/10 mb-4 border border-darkBorder group-hover:border-amber-500/20 transition-all shadow-inner">
+                        <i data-lucide="upload-cloud" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Arraste seus arquivos aqui</h3>
+                    <p class="text-[11px] text-gray-500 mt-1">Compatível com MP4, MOV e WebM • Vários de uma vez</p>
+                    
+                    <div class="mt-4 flex items-center gap-2 bg-gray-950 px-3 py-1.5 rounded-xl border border-darkBorder text-[10px] text-gray-400 font-medium">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                        Processamento local: nenhum arquivo sai da sua máquina
+                    </div>
+                </div>
+
+                <!-- Video Queue Area -->
+                <div class="bg-darkBg rounded-2xl border border-darkBorder p-5 flex flex-col gap-4 shadow-sm">
+                    <div class="flex items-center justify-between pb-1">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-2">
+                            <i data-lucide="list-video" class="w-4.5 h-4.5 text-gray-500"></i>
+                            Fila de Renderização
+                        </h3>
+                        <span id="queueCount" class="text-[10px] bg-gray-950 px-2 py-0.5 rounded-full border border-darkBorder text-gray-400 font-bold font-mono">0 vídeos</span>
+                    </div>
+
+                    <!-- Main action button -->
+                    <button id="renderAllBtn" disabled class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:from-darkCard disabled:to-darkCard disabled:text-gray-600 disabled:cursor-not-allowed text-darkBg font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-amber-500/5 hover:shadow-amber-500/10 flex items-center justify-center gap-2">
+                        <i data-lucide="play" class="w-4 h-4 fill-current"></i> Iniciar Processamento em Lote
+                    </button>
+
+                    <!-- Queue empty message -->
+                    <div id="emptyQueueMsg" class="py-12 border border-dashed border-darkBorder/40 rounded-xl text-center text-xs text-gray-600 flex flex-col items-center justify-center gap-2">
+                        <i data-lucide="inbox" class="w-7 h-7 text-gray-700"></i>
+                        <span>Nenhum vídeo carregado na fila</span>
+                    </div>
+
+                    <!-- Queue list container (flat item boundaries, no nested cards) -->
+                    <div id="videoQueueList" class="flex flex-col gap-3 max-h-[350px] overflow-y-auto pr-1"></div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer bar -->
+    <footer class="border-t border-darkBorder bg-darkBg/80 px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-3">
+        <div>
+            <span>© 2026 <strong>VaiDeViral Pro</strong> • Software Proprietário Sem Limites</span>
+        </div>
+        <div class="flex items-center gap-4 font-medium">
+            <a href="#" class="hover:text-gray-300 transition-colors">Termos de Uso</a>
+            <span class="text-gray-800">•</span>
+            <a href="#" class="hover:text-gray-300 transition-colors">Política de Privacidade</a>
+        </div>
+    </footer>
+
+    <!-- Hidden Video Elements for Processing -->
+    <div id="hiddenVideoContainer" class="hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
